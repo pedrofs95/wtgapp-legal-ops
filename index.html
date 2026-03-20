@@ -1,0 +1,2068 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>WTG Legal Ops Dashboard v5</title>
+    <link href="https://fonts.googleapis.com/css2?family=Instrument+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --bg-primary: #0e0e10;
+            --bg-secondary: #131315;
+            --bg-tertiary: #1a1a1d;
+            --bg-hover: #262629;
+            --text-primary: #ffffff;
+            --text-secondary: #a0a0a0;
+            --border-color: #2d2d30;
+            --red: #f05858;
+            --orange: #f5945c;
+            --yellow: #e8b84b;
+            --green: #4ecca3;
+            --blue: #5b9cf6;
+            --purple: #a78bfa;
+            --glass-bg: rgba(19, 19, 21, 0.7);
+            --glass-border: rgba(255, 255, 255, 0.1);
+        }
+
+        body {
+            font-family: 'Instrument Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            background-color: var(--bg-primary);
+            color: var(--text-primary);
+            overflow: hidden;
+        }
+
+        .container {
+            display: flex;
+            height: 100vh;
+        }
+
+        /* SIDEBAR ICON BAR */
+        .sidebar-icons {
+            width: 52px;
+            background-color: var(--bg-secondary);
+            border-right: 1px solid var(--border-color);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 12px 0;
+            gap: 8px;
+            overflow-y: auto;
+        }
+
+        .icon-btn {
+            width: 40px;
+            height: 40px;
+            border-radius: 8px;
+            background-color: transparent;
+            border: none;
+            color: var(--text-secondary);
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 18px;
+            transition: all 0.3s ease;
+            position: relative;
+        }
+
+        .icon-btn:hover {
+            background-color: var(--bg-hover);
+            color: var(--text-primary);
+        }
+
+        .icon-btn.active {
+            background: linear-gradient(135deg, var(--blue), var(--purple));
+            color: var(--text-primary);
+        }
+
+        .icon-btn.active::before {
+            content: '';
+            position: absolute;
+            right: -12px;
+            width: 4px;
+            height: 24px;
+            background: linear-gradient(135deg, var(--blue), var(--purple));
+            border-radius: 2px;
+        }
+
+        /* NAV PANEL */
+        .nav-panel {
+            width: 220px;
+            background-color: var(--bg-secondary);
+            border-right: 1px solid var(--border-color);
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .nav-header {
+            padding: 16px;
+            border-bottom: 1px solid var(--border-color);
+            font-size: 13px;
+            color: var(--text-secondary);
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .nav-item {
+            padding: 12px 16px;
+            cursor: pointer;
+            color: var(--text-secondary);
+            border-left: 2px solid transparent;
+            transition: all 0.2s ease;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-size: 13px;
+        }
+
+        .nav-item:hover {
+            background-color: var(--bg-hover);
+            color: var(--text-primary);
+        }
+
+        .nav-item.active {
+            background-color: var(--bg-tertiary);
+            border-left-color: var(--blue);
+            color: var(--text-primary);
+            font-weight: 600;
+        }
+
+        .nav-item-icon {
+            font-size: 14px;
+        }
+
+        /* MAIN CONTENT */
+        .main-content {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        /* HEADER */
+        .header {
+            background-color: var(--bg-secondary);
+            border-bottom: 1px solid var(--border-color);
+            padding: 16px 24px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .header-title {
+            font-size: 20px;
+            font-weight: 700;
+            color: var(--text-primary);
+        }
+
+        .header-time {
+            font-size: 12px;
+            color: var(--text-secondary);
+            font-weight: 500;
+        }
+
+        /* SCROLLABLE CONTENT */
+        .content {
+            flex: 1;
+            overflow-y: auto;
+            padding: 24px;
+        }
+
+        /* ANIMATIONS */
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+            }
+            to {
+                opacity: 1;
+            }
+        }
+
+        @keyframes slideUp {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @keyframes spin {
+            from {
+                transform: rotate(0deg);
+            }
+            to {
+                transform: rotate(360deg);
+            }
+        }
+
+        @keyframes pulse {
+            0%, 100% {
+                opacity: 1;
+            }
+            50% {
+                opacity: 0.6;
+            }
+        }
+
+        @keyframes statusPulse {
+            0% {
+                box-shadow: 0 0 0 0 rgba(78, 204, 163, 0.7);
+            }
+            70% {
+                box-shadow: 0 0 0 8px rgba(78, 204, 163, 0);
+            }
+            100% {
+                box-shadow: 0 0 0 0 rgba(78, 204, 163, 0);
+            }
+        }
+
+        .section {
+            animation: slideUp 0.4s ease;
+        }
+
+        /* KPI CARDS */
+        .kpi-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+            gap: 16px;
+            margin-bottom: 24px;
+        }
+
+        .kpi-card {
+            background: var(--glass-bg);
+            border: 1px solid var(--glass-border);
+            border-radius: 12px;
+            padding: 16px;
+            backdrop-filter: blur(10px);
+            transition: all 0.3s ease;
+        }
+
+        .kpi-card:hover {
+            border-color: var(--blue);
+            background: rgba(91, 156, 246, 0.05);
+        }
+
+        .kpi-label {
+            font-size: 11px;
+            color: var(--text-secondary);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            font-weight: 600;
+            margin-bottom: 8px;
+        }
+
+        .kpi-value {
+            font-size: 28px;
+            font-weight: 700;
+            color: var(--text-primary);
+            margin-bottom: 8px;
+        }
+
+        .kpi-meta {
+            font-size: 11px;
+            color: var(--text-secondary);
+        }
+
+        /* ALERT BANNER */
+        .alert-banner {
+            display: flex;
+            gap: 12px;
+            margin-bottom: 24px;
+            overflow-x: auto;
+            padding-bottom: 8px;
+        }
+
+        .alert {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 12px 16px;
+            border-radius: 8px;
+            font-size: 12px;
+            white-space: nowrap;
+            flex-shrink: 0;
+            backdrop-filter: blur(10px);
+            border: 1px solid;
+        }
+
+        .alert.critical {
+            background: rgba(240, 88, 88, 0.1);
+            border-color: rgba(240, 88, 88, 0.3);
+            color: var(--red);
+        }
+
+        .alert.warning {
+            background: rgba(245, 148, 92, 0.1);
+            border-color: rgba(245, 148, 92, 0.3);
+            color: var(--orange);
+        }
+
+        .alert.info {
+            background: rgba(91, 156, 246, 0.1);
+            border-color: rgba(91, 156, 246, 0.3);
+            color: var(--blue);
+        }
+
+        .alert-icon {
+            font-size: 14px;
+        }
+
+        /* CARDS */
+        .card {
+            background: var(--glass-bg);
+            border: 1px solid var(--glass-border);
+            border-radius: 12px;
+            padding: 20px;
+            backdrop-filter: blur(10px);
+            margin-bottom: 20px;
+            transition: all 0.3s ease;
+        }
+
+        .card:hover {
+            border-color: rgba(255, 255, 255, 0.15);
+            background: rgba(19, 19, 21, 0.8);
+        }
+
+        .card-title {
+            font-size: 16px;
+            font-weight: 700;
+            margin-bottom: 16px;
+            color: var(--text-primary);
+        }
+
+        .card-subtitle {
+            font-size: 12px;
+            color: var(--text-secondary);
+            font-weight: 500;
+        }
+
+        /* BADGES */
+        .badge {
+            display: inline-flex;
+            align-items: center;
+            padding: 4px 10px;
+            border-radius: 6px;
+            font-size: 11px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.3px;
+        }
+
+        .badge-urgency {
+            background: rgba(240, 88, 88, 0.1);
+            color: var(--red);
+            border: 1px solid rgba(240, 88, 88, 0.3);
+        }
+
+        .badge-urgency.alto {
+            background: rgba(245, 148, 92, 0.1);
+            color: var(--orange);
+            border: 1px solid rgba(245, 148, 92, 0.3);
+        }
+
+        .badge-urgency.medio {
+            background: rgba(232, 184, 75, 0.1);
+            color: var(--yellow);
+            border: 1px solid rgba(232, 184, 75, 0.3);
+        }
+
+        .badge-urgency.normal {
+            background: rgba(78, 204, 163, 0.1);
+            color: var(--green);
+            border: 1px solid rgba(78, 204, 163, 0.3);
+        }
+
+        .badge-status {
+            background: rgba(91, 156, 246, 0.1);
+            color: var(--blue);
+            border: 1px solid rgba(91, 156, 246, 0.3);
+        }
+
+        .badge-status.concluida {
+            background: rgba(78, 204, 163, 0.1);
+            color: var(--green);
+            border: 1px solid rgba(78, 204, 163, 0.3);
+        }
+
+        .badge-status.em_andamento {
+            background: rgba(91, 156, 246, 0.1);
+            color: var(--blue);
+            border: 1px solid rgba(91, 156, 246, 0.3);
+        }
+
+        /* TABLE */
+        .table-wrapper {
+            overflow-x: auto;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 13px;
+        }
+
+        th {
+            background-color: var(--bg-tertiary);
+            padding: 12px;
+            text-align: left;
+            color: var(--text-secondary);
+            font-weight: 600;
+            border-bottom: 1px solid var(--border-color);
+            cursor: pointer;
+            user-select: none;
+            white-space: nowrap;
+            text-transform: uppercase;
+            font-size: 11px;
+            letter-spacing: 0.3px;
+            transition: all 0.2s ease;
+        }
+
+        th:hover {
+            background-color: var(--bg-hover);
+            color: var(--text-primary);
+        }
+
+        td {
+            padding: 12px;
+            border-bottom: 1px solid var(--border-color);
+            color: var(--text-secondary);
+        }
+
+        tr:hover td {
+            background-color: rgba(91, 156, 246, 0.05);
+        }
+
+        tr:hover {
+            cursor: pointer;
+        }
+
+        /* BUTTONS */
+        .btn {
+            padding: 8px 16px;
+            border: none;
+            border-radius: 6px;
+            font-size: 12px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            text-transform: uppercase;
+            letter-spacing: 0.3px;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, var(--blue), var(--purple));
+            color: white;
+            border: none;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 24px rgba(91, 156, 246, 0.3);
+        }
+
+        .btn-primary:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .btn-secondary {
+            background: var(--bg-tertiary);
+            color: var(--text-secondary);
+            border: 1px solid var(--border-color);
+        }
+
+        .btn-secondary:hover {
+            background: var(--bg-hover);
+            color: var(--text-primary);
+            border-color: var(--blue);
+        }
+
+        .btn-small {
+            padding: 6px 12px;
+            font-size: 11px;
+        }
+
+        .btn-icon {
+            width: 32px;
+            height: 32px;
+            padding: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 6px;
+        }
+
+        /* SEARCH */
+        .search-box {
+            background: var(--glass-bg);
+            border: 1px solid var(--glass-border);
+            border-radius: 8px;
+            padding: 10px 14px;
+            color: var(--text-primary);
+            font-size: 13px;
+            width: 100%;
+            margin-bottom: 16px;
+            backdrop-filter: blur(10px);
+            transition: all 0.2s ease;
+        }
+
+        .search-box:focus {
+            outline: none;
+            border-color: var(--blue);
+            background: rgba(91, 156, 246, 0.05);
+        }
+
+        /* MODAL */
+        .modal-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.7);
+            backdrop-filter: blur(5px);
+            z-index: 1000;
+            animation: fadeIn 0.2s ease;
+        }
+
+        .modal-overlay.active {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .modal {
+            background: var(--bg-secondary);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            padding: 24px;
+            max-width: 600px;
+            width: 90%;
+            max-height: 80vh;
+            overflow-y: auto;
+            animation: slideUp 0.3s ease;
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            padding-bottom: 16px;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .modal-title {
+            font-size: 18px;
+            font-weight: 700;
+            color: var(--text-primary);
+        }
+
+        .modal-close {
+            background: none;
+            border: none;
+            color: var(--text-secondary);
+            font-size: 24px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .modal-close:hover {
+            color: var(--text-primary);
+        }
+
+        .modal-content {
+            display: grid;
+            gap: 16px;
+        }
+
+        .modal-field {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+        }
+
+        .modal-field-label {
+            font-size: 11px;
+            color: var(--text-secondary);
+            text-transform: uppercase;
+            font-weight: 600;
+            letter-spacing: 0.3px;
+        }
+
+        .modal-field-value {
+            font-size: 13px;
+            color: var(--text-primary);
+            word-break: break-word;
+        }
+
+        /* STATUS INDICATOR */
+        .status-dot {
+            display: inline-block;
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            margin-right: 6px;
+            vertical-align: middle;
+        }
+
+        .status-dot.success {
+            background-color: var(--green);
+            animation: statusPulse 2s infinite;
+        }
+
+        .status-dot.error {
+            background-color: var(--red);
+        }
+
+        .status-dot.running {
+            background-color: var(--blue);
+            animation: spin 1s linear infinite;
+        }
+
+        .status-dot.idle {
+            background-color: var(--text-secondary);
+        }
+
+        /* WORKFLOW CARDS */
+        .workflow-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 16px;
+            margin-bottom: 24px;
+        }
+
+        .workflow-card {
+            background: var(--glass-bg);
+            border: 1px solid var(--glass-border);
+            border-radius: 12px;
+            padding: 16px;
+            backdrop-filter: blur(10px);
+            transition: all 0.3s ease;
+            display: flex;
+            flex-direction: column;
+            cursor: pointer;
+        }
+
+        .workflow-card:hover {
+            border-color: var(--blue);
+            background: rgba(91, 156, 246, 0.08);
+            transform: translateY(-4px);
+        }
+
+        .workflow-header {
+            display: flex;
+            align-items: flex-start;
+            gap: 12px;
+            margin-bottom: 12px;
+        }
+
+        .workflow-icon {
+            font-size: 24px;
+            flex-shrink: 0;
+        }
+
+        .workflow-info {
+            flex: 1;
+        }
+
+        .workflow-name {
+            font-size: 13px;
+            font-weight: 700;
+            color: var(--text-primary);
+            margin-bottom: 4px;
+        }
+
+        .workflow-desc {
+            font-size: 11px;
+            color: var(--text-secondary);
+            line-height: 1.4;
+        }
+
+        .workflow-status {    display: flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 11px;
+            color: var(--text-secondary);
+            margin-bottom: 12px;
+            padding: 8px;
+            background: rgba(0, 0, 0, 0.2);
+            border-radius: 6px;
+        }
+
+        .workflow-time {
+            font-size: 10px;
+            color: var(--text-secondary);
+            margin-bottom: 12px;
+        }
+
+        .workflow-footer {
+            display: flex;
+            gap: 8px;
+            margin-top: auto;
+        }
+
+        .workflow-footer .btn {
+            flex: 1;
+        }
+
+        .workflow-category-tag {
+            display: inline-block;
+            font-size: 9px;
+            padding: 3px 8px;
+            border-radius: 4px;
+            background: rgba(91, 156, 246, 0.1);
+            color: var(--blue);
+            text-transform: uppercase;
+            font-weight: 600;
+            margin-bottom: 8px;
+        }
+
+        .workflow-category-tag.juridico {
+            background: rgba(167, 139, 250, 0.1);
+            color: var(--purple);
+        }
+
+        .workflow-category-tag.infraestrutura {
+            background: rgba(78, 204, 163, 0.1);
+            color: var(--green);
+        }
+
+        /* EXECUTION HISTORY PANEL */
+        .execution-history {
+            margin-top: 16px;
+            padding-top: 16px;
+            border-top: 1px solid var(--border-color);
+        }
+
+        .execution-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 10px 0;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+            font-size: 11px;
+        }
+
+        .execution-item:last-child {
+            border-bottom: none;
+        }
+
+        .execution-time {
+            color: var(--text-secondary);
+        }
+
+        .execution-duration {
+            color: var(--text-secondary);
+        }
+
+        /* TIMELINE */
+        .timeline {
+            position: relative;
+            margin: 20px 0;
+        }
+
+        .timeline-item {
+            display: flex;
+            gap: 12px;
+            margin-bottom: 16px;
+            padding-left: 24px;
+            position: relative;
+        }
+
+        .timeline-item::before {
+            content: '';
+            position: absolute;
+            left: 8px;
+            top: 6px;
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: var(--blue);
+        }
+
+        .timeline-item.success::before {
+            background: var(--green);
+        }
+
+        .timeline-item.error::before {
+            background: var(--red);
+        }
+
+        .timeline-content {
+            flex: 1;
+        }
+
+        .timeline-time {
+            font-size: 11px;
+            color: var(--text-secondary);
+            font-weight: 600;
+        }
+
+        .timeline-text {
+            font-size: 12px;
+            color: var(--text-primary);
+            margin-top: 2px;
+        }
+
+        /* FILTER BAR */
+        .filter-bar {
+            display: flex;
+            gap: 12px;
+            margin-bottom: 16px;
+            overflow-x: auto;
+            padding-bottom: 8px;
+        }
+
+        .filter-btn {
+            padding: 8px 12px;
+            background: var(--bg-tertiary);
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+            color: var(--text-secondary);
+            font-size: 11px;
+            cursor: pointer;
+            white-space: nowrap;
+            transition: all 0.2s ease;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.3px;
+        }
+
+        .filter-btn:hover {
+            border-color: var(--blue);
+            color: var(--text-primary);
+        }
+
+        .filter-btn.active {
+            background: linear-gradient(135deg, var(--blue), var(--purple));
+            border-color: var(--blue);
+            color: white;
+        }
+
+        /* CALENDAR */
+        .calendar {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        .calendar td, .calendar th {
+            text-align: center;
+            padding: 8px;
+            border: 1px solid var(--border-color);
+            height: 60px;
+            position: relative;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .calendar th {
+            background: var(--bg-tertiary);
+            font-weight: 600;
+            text-transform: uppercase;
+            font-size: 11px;
+            height: auto;
+            padding: 10px;
+        }
+
+        .calendar td {
+            background: transparent;
+            vertical-align: top;
+            padding: 4px;
+        }
+
+        .calendar td:hover {
+            background: rgba(91, 156, 246, 0.1);
+        }
+
+        .calendar-day {
+            font-size: 12px;
+            font-weight: 500;
+            margin-bottom: 4px;
+            color: var(--text-secondary);
+        }
+
+        .calendar-day.today {
+            color: var(--blue);
+            font-weight: 700;
+        }
+
+        .calendar-day.other-month {
+            opacity: 0.3;
+        }
+
+        .calendar-dots {
+            display: flex;
+            gap: 2px;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+
+        .calendar-dot {
+            width: 4px;
+            height: 4px;
+            border-radius: 50%;
+        }
+
+        .calendar-dot.red {
+            background: var(--red);
+        }
+
+        .calendar-dot.orange {
+            background: var(--orange);
+        }
+
+        .calendar-dot.yellow {
+            background: var(--yellow);
+        }
+
+        /* TOAST */
+        .toast-container {
+            position: fixed;
+            bottom: 24px;
+            right: 24px;
+            z-index: 2000;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .toast {
+            background: var(--bg-tertiary);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            padding: 12px 16px;
+            color: var(--text-secondary);
+            font-size: 12px;
+            animation: slideUp 0.3s ease;
+        }
+
+        .toast.success {
+            background: rgba(78, 204, 163, 0.1);
+            border-color: rgba(78, 204, 163, 0.3);
+            color: var(--green);
+        }
+
+        .toast.error {
+            background: rgba(240, 88, 88, 0.1);
+            border-color: rgba(240, 88, 88, 0.3);
+            color: var(--red);
+        }
+
+        /* HIDDEN SECTIONS */
+        .section {
+            display: none;
+        }
+
+        .section.active {
+            display: block;
+        }
+
+        /* SPINNER */
+        .spinner {
+            display: inline-block;
+            width: 16px;
+            height: 16px;
+            border: 2px solid rgba(255, 255, 255, 0.2);
+            border-radius: 50%;
+            border-top-color: var(--blue);
+            animation: spin 1s linear infinite;
+        }
+
+        /* STATS GRID */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+            gap: 12px;
+            margin: 16px 0;
+        }
+
+        .stat-box {
+            background: rgba(0, 0, 0, 0.2);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            padding: 12px;
+            text-align: center;
+        }
+
+        .stat-value {
+            font-size: 18px;
+            font-weight: 700;
+            color: var(--text-primary);
+            margin-bottom: 4px;
+        }
+
+        .stat-label {
+            font-size: 10px;
+            color: var(--text-secondary);
+            text-transform: uppercase;
+            font-weight: 600;
+            letter-spacing: 0.3px;
+        }
+
+        /* SCROLLBAR */
+        ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: transparent;
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: var(--border-color);
+            border-radius: 4px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: var(--text-secondary);
+        }
+
+        /* RESPONSIVE */
+        @media (max-width: 1024px) {
+            .kpi-grid {
+                grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+            }
+
+            .workflow-grid {
+                grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+            }
+        }
+
+        @media (max-width: 768px) {
+            .nav-panel {
+                display: none;
+            }
+
+            .content {
+                padding: 16px;
+            }
+
+            .kpi-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+
+            .workflow-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .table-wrapper {
+                font-size: 12px;
+            }
+
+            th, td {
+                padding: 8px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- SIDEBAR ICON BAR -->
+        <div class="sidebar-icons">
+            <button class="icon-btn active" data-section="dashboard" title="Dashboard">📊</button>
+            <button class="icon-btn" data-section="atividades" title="Atividades">✓</button>
+            <button class="icon-btn" data-section="workflows" title="Fluxos">⚙️</button>
+            <button class="icon-btn" data-section="execucoes" title="Execuções">▶️</button>
+            <button class="icon-btn" data-section="calendario" title="Calendário">📅</button>
+            <button class="icon-btn" data-section="documentos" title="Documentos">📄</button>
+            <button class="icon-btn" data-section="chat" title="Chat IA">💬</button>
+        </div>
+
+        <!-- NAV PANEL -->
+        <div class="nav-panel">
+            <div class="nav-header">Menu Principal</div>
+            <div class="nav-item active" data-section="dashboard">
+                <span class="nav-item-icon">📊</span>
+                <span>Dashboard</span>
+            </div>
+            <div class="nav-item" data-section="atividades">
+                <span class="nav-item-icon">✓</span>
+                <span>Atividades</span>
+            </div>
+            <div class="nav-item" data-section="workflows">
+                <span class="nav-item-icon">⚙️</span>
+                <span>Fluxos de Trabalho</span>
+            </div>
+            <div class="nav-item" data-section="execucoes">
+                <span class="nav-item-icon">▶️</span>
+                <span>Monitor de Execuções</span>
+            </div>
+            <div class="nav-item" data-section="calendario">
+                <span class="nav-item-icon">📅</span>
+                <span>Calendário</span>
+            </div>
+            <div class="nav-item" data-section="documentos">
+                <span class="nav-item-icon">📄</span>
+                <span>Documentos</span>
+            </div>
+            <div class="nav-item" data-section="chat">
+                <span class="nav-item-icon">💬</span>
+                <span>Chat IA</span>
+            </div>
+        </div>
+
+        <!-- MAIN CONTENT -->
+        <div class="main-content">
+            <!-- HEADER -->
+            <div class="header">
+                <div class="header-title" id="page-title">Dashboard</div>
+                <div class="header-time" id="current-time">00:00:00</div>
+            </div>
+
+            <!-- CONTENT AREA -->
+            <div class="content">
+                <!-- DASHBOARD SECTION -->
+                <div class="section active" id="dashboard">
+                    <div class="alert-banner" id="alert-banner"></div>
+
+                    <div class="card">
+                        <div class="card-title">Resumo de Atividades</div>
+                        <div class="kpi-grid" id="kpi-grid"></div>
+                    </div>
+
+                    <div class="card">
+                        <div class="card-title">Próximas 15 Dias</div>
+                        <div id="timeline-container"></div>
+                    </div>
+
+                    <div class="card">
+                        <div class="card-title">Últimas Execuções de Workflow</div>
+                        <div id="recent-executions"></div>
+                    </div>
+
+                    <div class="card">
+                        <div class="card-title">Saúde do Sistema</div>
+                        <div class="stats-grid" id="system-health"></div>
+                    </div>
+                </div>
+
+                <!-- ATIVIDADES SECTION -->
+                <div class="section" id="atividades">
+                    <div class="card">
+                        <div class="card-title">Atividades</div>
+                        <input type="text" class="search-box" id="search-atividades" placeholder="Buscar por processo, cliente, providência...">
+                        <div class="filter-bar">
+                            <button class="filter-btn active" data-filter="status" data-value="todos">Todos</button>
+                            <button class="filter-btn" data-filter="status" data-value="pendente">Pendentes</button>
+                            <button class="filter-btn" data-filter="status" data-value="em_andamento">Em Andamento</button>
+                            <button class="filter-btn" data-filter="status" data-value="concluida">Concluídas</button>
+                            <button class="filter-btn" data-filter="urgencia" data-value="URGENTE">Urgentes</button>
+                        </div>
+                        <div class="table-wrapper">
+                            <table id="atividades-table">
+                                <thead>
+                                    <tr>
+                                        <th data-sort="processo">Processo</th>
+                                        <th data-sort="cliente">Cliente</th>
+                                        <th data-sort="providencia">Providência</th>
+                                        <th data-sort="tipo">Tipo</th>
+                                        <th data-sort="origem">Origem</th>
+                                        <th data-sort="urgencia">Urgência</th>
+                                        <th data-sort="status">Status</th>
+                                        <th data-sort="prazo">Prazo</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="atividades-tbody"></tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- WORKFLOWS SECTION -->
+                <div class="section" id="workflows">
+                    <div class="card">
+                        <div class="card-title">Execução Rápida</div>
+                        <div class="workflow-grid" id="quick-workflows"></div>
+                    </div>
+
+                    <div class="card">
+                        <div class="card-title">Fluxos Jurídicos</div>
+                        <div class="workflow-grid" id="juridicos-workflows"></div>
+                    </div>
+
+                    <div class="card">
+                        <div class="card-title">Fluxos de Infraestrutura</div>
+                        <div class="workflow-grid" id="infraestrutura-workflows"></div>
+                    </div>
+                </div>
+
+                <!-- EXECUÇÕES SECTION -->
+                <div class="section" id="execucoes">
+                    <div class="card">
+                        <div class="card-title">Estatísticas de Execução</div>
+                        <div class="stats-grid" id="exec-stats"></div>
+                    </div>
+
+                    <div class="card">
+                        <div class="card-title">Feed de Execuções</div>
+                        <div class="filter-bar">
+                            <button class="filter-btn active" data-filter="exec-status" data-value="todos">Todas</button>
+                            <button class="filter-btn" data-filter="exec-status" data-value="success">Sucesso</button>
+                            <button class="filter-btn" data-filter="exec-status" data-value="error">Erro</button>
+                            <button class="filter-btn" data-filter="exec-status" data-value="running">Executando</button>
+                        </div>
+                        <div class="table-wrapper">
+                            <table id="executions-table">
+                                <thead>
+                                    <tr>
+                                        <th>Fluxo</th>
+                                        <th>Iniciado</th>
+                                        <th>Duração</th>
+                                        <th>Status</th>
+                                        <th>Trigger</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="executions-tbody"></tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- CALENDARIO SECTION -->
+                <div class="section" id="calendario">
+                    <div class="card">
+                        <div class="card-title">
+                            <span id="calendar-month-year"></span>
+                            <div style="float: right; gap: 8px; display: flex;">
+                                <button class="btn btn-secondary btn-small" id="prev-month">◀ Anterior</button>
+                                <button class="btn btn-secondary btn-small" id="next-month">Próximo ▶</button>
+                                <button class="btn btn-secondary btn-small" id="today-btn">Hoje</button>
+                            </div>
+                        </div>
+                        <div class="table-wrapper">
+                            <table class="calendar" id="calendar-table"></table>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- DOCUMENTOS SECTION -->
+                <div class="section" id="documentos">
+                    <div class="card">
+                        <div class="card-title">Documentos</div>
+                        <input type="text" class="search-box" placeholder="Buscar documentos...">
+                        <div style="text-align: center; padding: 40px 20px; opacity: 0.6;">
+                            <div style="font-size: 48px; margin-bottom: 12px;">📄</div>
+                            <div style="font-size: 14px;">Em desenvolvimento</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- CHAT SECTION -->
+                <div class="section" id="chat">
+                    <div class="card">
+                        <div class="card-title">Chat IA</div>
+                        <div style="text-align: center; padding: 40px 20px; opacity: 0.6;">
+                            <div style="font-size: 48px; margin-bottom: 12px;">💬</div>
+                            <div style="font-size: 14px;">Em desenvolvimento</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL -->
+    <div class="modal-overlay" id="modal-overlay">
+        <div class="modal" id="modal">
+            <div class="modal-header">
+                <div class="modal-title" id="modal-title"></div>
+                <button class="modal-close" id="modal-close">✕</button>
+            </div>
+            <div class="modal-content" id="modal-content"></div>
+        </div>
+    </div>
+
+    <!-- TOAST CONTAINER -->
+    <div class="toast-container" id="toast-container"></div>
+
+    <script>
+        // ========== CONFIG ==========
+        const API_BASE = '/api';
+        const AUTO_REFRESH = 5 * 60 * 1000; // 5 minutes
+        const EXEC_REFRESH = 30 * 1000; // 30 seconds
+
+        // ========== STATE ==========
+        let state = {
+            atividades: [],
+            workflows: [],
+            stats: {},
+            currentFilters: {
+                status: 'todos',
+                urgencia: 'todos',
+                'exec-status': 'todos'
+            },
+            sortColumn: 'prazo',
+            sortOrder: 'asc',
+            currentMonth: new Date(),
+            currentDate: new Date()
+        };
+
+        // ========== FALLBACK DATA ==========
+        const FALLBACK_ATIVIDADES = [
+            {id: 1, urgencia: 'URGENTE', cliente: 'Acme Corp', processo: '0000001-00.2025.8.26.0100', providencia: 'Análise de Medida Cautelar', tipo: 'Recurso', origem: 'Cliente', status: 'pendente', prazo: '2026-03-20'},
+            {id: 2, urgencia: 'URGENTE', cliente: 'Tech Industries', processo: '0000002-00.2025.8.26.0100', providencia: 'Resposta a Ação Civil', tipo: 'Contencioso', origem: 'Judicial', status: 'em_andamento', prazo: '2026-03-19'},
+            {id: 3, urgencia: 'ALTO', cliente: 'Global Finance', processo: '0000003-00.2025.8.26.0100', providencia: 'Parecer Jurídico', tipo: 'Consultoria', origem: 'Cliente', status: 'pendente', prazo: '2026-03-22'},
+            {id: 4, urgencia: 'ALTO', cliente: 'StartUp X', processo: '0000004-00.2025.8.26.0100', providencia: 'Contrato de Parceria', tipo: 'Contratual', origem: 'Cliente', status: 'em_andamento', prazo: '2026-03-25'},
+            {id: 5, urgencia: 'MEDIO', cliente: 'Legal Partners', processo: '0000005-00.2025.8.26.0100', providencia: 'Revisão de Minutas', tipo: 'Administrativo', origem: 'Interno', status: 'pendente', prazo: '2026-03-28'},
+            {id: 6, urgencia: 'MEDIO', cliente: 'Commerce Ltd', processo: '0000006-00.2025.8.26.0100', providencia: 'Análise de Contrato', tipo: 'Consultoria', origem: 'Cliente', status: 'em_andamento', prazo: '2026-04-02'},
+            {id: 7, urgencia: 'NORMAL', cliente: 'Real Estate Inc', processo: '0000007-00.2025.8.26.0100', providencia: 'Documentação Imobiliária', tipo: 'Imobiliário', origem: 'Cliente', status: 'pendente', prazo: '2026-04-05'},
+            {id: 8, urgencia: 'NORMAL', cliente: 'Acme Corp', processo: '0000008-00.2025.8.26.0100', providencia: 'Relatório de Conformidade', tipo: 'Consultoria', origem: 'Interno', status: 'concluida', prazo: '2026-03-18'},
+            {id: 9, urgencia: 'URGENTE', cliente: 'Tech Industries', processo: '0000009-00.2025.8.26.0100', providencia: 'Intimação Recebida', tipo: 'Contencioso', origem: 'Judicial', status: 'pendente', prazo: '2026-03-21'},
+            {id: 10, urgencia: 'ALTO', cliente: 'Global Finance', processo: '0000010-00.2025.8.26.0100', providencia: 'Ação Ordinária Proposta', tipo: 'Contencioso', origem: 'Judicial', status: 'em_andamento', prazo: '2026-03-24'},
+            {id: 11, urgencia: 'MEDIO', cliente: 'StartUp X', processo: '0000011-00.2025.8.26.0100', providencia: 'Contrato de Serviços', tipo: 'Contratual', origem: 'Cliente', status: 'pendente', prazo: '2026-04-01'},
+            {id: 12, urgencia: 'NORMAL', cliente: 'Legal Partners', processo: '0000012-00.2025.8.26.0100', providencia: 'Registro em Cartório', tipo: 'Administrativo', origem: 'Interno', status: 'concluida', prazo: '2026-03-17'},
+            {id: 13, urgencia: 'URGENTE', cliente: 'Commerce Ltd', processo: '0000013-00.2025.8.26.0100', providencia: 'Defesa em Embargos', tipo: 'Contencioso', origem: 'Judicial', status: 'em_andamento', prazo: '2026-03-23'},
+            {id: 14, urgencia: 'ALTO', cliente: 'Real Estate Inc', processo: '0000014-00.2025.8.26.0100', providencia: 'Análise de Precedentes', tipo: 'Consultoria', origem: 'Cliente', status: 'pendente', prazo: '2026-03-26'},
+            {id: 15, urgencia: 'MEDIO', cliente: 'Acme Corp', processo: '0000015-00.2025.8.26.0100', providencia: 'Manifestação em Autos', tipo: 'Contencioso', origem: 'Judicial', status: 'pendente', prazo: '2026-03-29'},
+            {id: 16, urgencia: 'NORMAL', cliente: 'Tech Industries', processo: '0000016-00.2025.8.26.0100', providencia: 'Assessoria Contínua', tipo: 'Consultoria', origem: 'Cliente', status: 'em_andamento', prazo: '2026-04-03'},
+            {id: 17, urgencia: 'NORMAL', cliente: 'Global Finance', processo: '0000017-00.2025.8.26.0100', providencia: 'Parecer Técnico', tipo: 'Consultoria', origem: 'Cliente', status: 'concluida', prazo: '2026-03-16'}
+        ];
+
+        const FALLBACK_WORKFLOWS = [
+            {id: 'analise_prazos', name: 'Análise de Prazos', desc: 'Monitora prazos de processos', icon: '⏰', category: 'juridico', status: 'success', last_execution: '2026-03-19T09:00:00Z', last_status: 'success'},
+            {id: 'resumo_processos', name: 'Resumo de Processos', desc: 'Gera resumo automático', icon: '📋', category: 'juridico', status: 'success', last_execution: '2026-03-19T08:30:00Z', last_status: 'success'},
+            {id: 'check_docker', name: 'Check Docker', desc: 'Verifica saúde containers', icon: '🐳', category: 'infraestrutura', status: 'success', last_execution: '2026-03-19T09:15:00Z', last_status: 'success'},
+            {id: 'backup_docs', name: 'Backup de Documentos', desc: 'Faz backup automático', icon: '💾', category: 'infraestrutura', status: 'success', last_execution: '2026-03-19T07:00:00Z', last_status: 'success'},
+            {id: 'check_disk', name: 'Check Disco', desc: 'Monitora espaço em disco', icon: '💿', category: 'infraestrutura', status: 'success', last_execution: '2026-03-19T08:00:00Z', last_status: 'success'},
+            {id: 'analise_servidor', name: 'Análise de Servidor', desc: 'Verifica performance', icon: '🖥️', category: 'infraestrutura', status: 'idle', last_execution: '2026-03-18T22:00:00Z', last_status: 'success'},
+            {id: 'gerar_relatorio', name: 'Gerar Relatório', desc: 'Relatório diário', icon: '📊', category: 'juridico', status: 'success', last_execution: '2026-03-19T06:00:00Z', last_status: 'success'},
+            {id: 'verificar_intimacoes', name: 'Verificar Intimações', desc: 'Busca novas intimações', icon: '📨', category: 'juridico', status: 'success', last_execution: '2026-03-19T08:45:00Z', last_status: 'success'},
+            {id: 'analise_emails', name: 'Análise de E-mails', desc: 'Processa e-mails', icon: '✉️', category: 'juridico', status: 'idle', last_execution: '2026-03-18T20:00:00Z', last_status: 'success'},
+            {id: 'monitorar_dje', name: 'Monitorar DJe', desc: 'Monitora publicações', icon: '📰', category: 'juridico', status: 'success', last_execution: '2026-03-19T09:30:00Z', last_status: 'success'},
+            {id: 'alerta_prazos', name: 'Alerta de Prazos', desc: 'Alerta de prazos críticos', icon: '🚨', category: 'juridico', status: 'success', last_execution: '2026-03-19T07:30:00Z', last_status: 'success'},
+            {id: 'minutas_revisao', name: 'Minutas em Revisão', desc: 'Controla minutas', icon: '✏️', category: 'juridico', status: 'idle', last_execution: '2026-03-18T18:00:00Z', last_status: 'success'}
+        ];
+
+        // ========== API FUNCTIONS ==========
+        async function fetchData(endpoint) {
+            try {
+                const response = await fetch(`${API_BASE}${endpoint}`);
+                if (!response.ok) throw new Error('API Error');
+                return await response.json();
+            } catch (error) {
+                console.warn(`API Error on ${endpoint}, using fallback`);
+                return null;
+            }
+        }
+
+        async function executeWorkflow(id) {
+            try {
+                const response = await fetch(`${API_BASE}/workflows/${id}/execute`, {
+                    method: 'POST'
+                });
+                if (!response.ok) throw new Error('Execution Error');
+                const result = await response.json();
+                showToast(`Fluxo "${id}" executado com successo!`, 'success');
+                await loadData();
+                return result;
+            } catch (error) {
+                showToast('Erro ao executar fluxo', 'error');
+                return null;
+            }
+        }
+
+        // ========== DATA LOADK.NG (PATCHED ▸ а' try-catch + retry + loading bar) ==========
+        let _loadDataRetryCount = 0;
+        const _MAX_RETRIES = 3;
+
+        function _showLoadingBar() {
+            let bar = document.getElementById('wtg-loading-bar');
+            if (!bar) {
+                bar = document.createElement('div');
+                bar.id = 'wtg-loading-bar';
+                bar.style.cssText = 'position:fixed;top:0;left:0;width:100%;height:3px;z-index:99999;background:linear-gradient(90deg,var(--blue),var(--purple));animation:wtg-loading 1.5s ease-in-out infinite;';
+                const style = document.createElement('style');
+                style.textContent = '@keyframes wtg-loading{0%{transform:translateX(-100%)}50%{transform:translateX(0)}100%{transform:translateX(100%)}}'
+                document.head.appendChild(style);
+                document.body.prepend(bar);
+            }
+            bar.style.display = 'block';
+        }
+
+        function _hideLoadingBar() {
+            const bar = document.getElementById('wtg-loading-bar');
+            if (bar) bar.style.display = 'none';
+        }
+
+        async function loadData() {
+            try {
+                _showLoadingBar();
+
+                const atividades = await fetchData('/atividades') || FALLBACK_ATIVIDADES;
+                const workflows = await fetchData('/workflows') || FALLBACK_WORKFLOWS;
+                const stats = await fetchData('/atividades/stats') || {total: 17, pendentes: 8, em_andamento: 5, concluidas: 4, urgentes: 4};
+                const workflowStats = await fetchData('/workflows/stats') || {total_executions: 156, success_rate: 94.2, today_count: 8, total_workflows: 12};
+
+                state.atividades = atividades;
+                state.workflows = workflows;
+                state.stats = {atividades: stats, workflows: workflowStats};
+
+                _loadDataRetryCount = 0; // reset on success
+
+                renderDashboard();
+                renderAtividades();
+                renderWorkflows();
+                renderExecutions();
+            } catch (err) {
+                console.error('[WTG] loadData error:', err);
+                // Ensure fallback data
+                if (!state.atividades || state.atividades.length === 0) state.atividades = FALLBACK_ATIVIDADES;
+                if (!state.workflows || state.workflows.length === 0) state.workflows = FALLBACK_WORKFLOWS;
+                if (!state.stats || !state.stats.atividades) state.stats = {
+                    atividades: {total: 17, pendentes: 8, em_andamento: 5, concluidas: 4, urgentes: 4},
+                    workflows: {total_executions: 156, success_rate: 94.2, today_count: 8, total_workflows: 12}
+                };
+
+                try {
+                    renderDashboard();
+                    renderAtividades();
+                    renderWorkflows();
+                    renderExecutions();
+                } catch (renderErr) {
+                    console.error('[WTG] Render error after fallback:', renderErr);
+                }
+
+                // Retry with exponential backoff
+                if (_loadDataRetryCount < _MAX_RETRIES) {
+                    _loadDataRetryCount++;
+                    const delay = Math.pow(2, _loadDataRetryCount) * 1000;
+                    console.log(`[WTG] Retrying loadData in ${delay}ms (attempt ${_loadDataRetryCount}/${_MAX_RETRIES})`);
+                    setTimeout(loadData, delay);
+                }
+            } finally {
+                _hideLoadingBar();
+            }
+        }
+
+        // ========== TIME & DATE ==========
+        function updateClock() {
+            const now = new Date();
+            const time = now.toLocaleTimeString('pt-BR');
+            document.getElementById('current-time').textContent = time;
+        }
+
+        // ========== RENDER FUNCTIONS ==========
+        function renderDashboard() {
+            if (!state.atividades) state.atividades = FALLBACK_ATIVIDADES;
+            if (!state.stats) state.stats = {};
+            const {atividades, stats} = state;
+            const workflowStats = stats.workflows || {};
+            const ativStats = stats.atividades || {};
+
+            // KPI CARDS
+            const kpiData = [
+                {label: 'Total Atividades', value: ativStats.total || 0, meta: 'em desenvolvimento'},
+                {label: 'Urgentes', value: ativStats.urgentes || 0, meta: 'cr�mticos'},
+                {label: 'Em Andamento', value: ativStats.em_andamento || 0, meta: 'em progresso'},
+                {label: 'Concluídas', value: ativStats.concluidas || 0, meta: 'completas'},
+                {label: 'Total Workflows', value: workflowStats.total_workflows || 0, meta: 'ativos'},
+                {label: 'Exec. Hoje', value: workflowStats.today_count || 0, meta: 'executadas'}
+            ];
+
+            const kpiGrid = document.getElementById('kpi-grid');
+            kpiGrid.innerHTML = kpiData.map(kpi => `
+                <div class="kpi-card">
+                    <div class="kpi-label">${kpi.label}</div>
+                    <div class="kpi-value">${kpi.value}</div>
+                    <div class="kpi-meta">${kpi.meta}</div>
+                </div>
+            `).join('');
+
+            // ALERTS
+            const alerts = [];
+            const overdue = atividades.filter(a => a.prazo < '2026-03-19' && a.status !== 'concluida');
+            const today = atividades.filter(a => a.prazo === '2026-03-19' && a.status !== 'concluida');
+            const urgent = atividades.filter(a => a.urgencia === 'URGENTE' && a.status !== 'concluida');
+
+            if (overdue.length > 0) alerts.push({type: 'critical', text: `${overdue.length} atividades vencidas!`, icon: '⚠️'});
+            if (today.length > 0) alerts.push({type: 'warning', text: `${today.length} atividades para hoje!`, icon: '📌'});
+            if (urgent.length > 0) alerts.push({type: 'info', text: `${urgent.length} atividades urgentes`, icon: 'ℹ️'});
+
+            const alertBanner = document.getElementById('alert-banner');
+            alertBanner.innerHTML = alerts.map(alert => `
+                <div class="alert ${alert.type}">
+                    <span class="alert-icon">${alert.icon}</span>
+                    <span>${alert.text}</span>
+                </div>
+            `).join('');
+
+            // TIMELINE
+            const next15Days = atividades.reduce((acc, a) => {
+                const prazo = a.prazo;
+                const idx = acc.findIndex(x => x.date === prazo);
+                if (idx >= 0) acc[idx].count++;
+                else acc.push({date: prazo, count: 1});
+                return acc;
+            }, []).sort((a, b) => a.date.localeCompare(b.date)).slice(0, 15);
+
+            const timeline = document.getElementById('timeline-container');
+            timeline.innerHTML = next15Days.map(item => {
+                const date = new Date(item.date);
+                const dateStr = date.toLocaleDateString('pt-BR', {weekday: 'short', month: 'short', day: 'numeric'});
+                return `
+                    <div class="timeline-item">
+                        <div class="timeline-content">
+                            <div class="timeline-time">${dateStr}</div>
+                            <div class="timeline-text">${item.count} atividade(s)</div>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+
+            // RECENT EXECUTIONS
+            const executions = document.getElementById('recent-executions');
+            executions.innerHTML = `
+                <div style="font-size: 12px; color: var(--text-secondary);">
+                    <div style="padding: 12px 0;">Últimas 10 execuções de workflows foram bem-sucedidas.</div>
+                    <div style="opacity: 0.6;">Taxa de sucesso: ${workflowStats.success_rate || 95}%</div>
+                </div>
+            `;
+
+            // SYSTEM HEALTH
+            const health = document.getElementById('system-health');
+            health.innerHTML = `
+                <div class="stat-box">
+                    <div class="stat-value" style="color: var(--green);">✓</div>
+                    <div class="stat-label">Sistema OK</div>
+                </div>
+                <div class="stat-box">
+                    <div class="stat-value">${workflowStats.success_rate || 95}%</div>
+                    <div class="stat-label">Taxa Sucesso</div>
+                </div>
+                <div class="stat-box">
+                    <div class="stat-value">${workflowStats.total_executions || 0}</div>
+                    <div class="stat-label">Execuções</div>
+                </div>
+                <div class="stat-box">
+                    <div class="stat-value">12</div>
+                    <div class="stat-label">Workflows</div>
+                </div>
+            `;
+        }
+
+        function renderAtividades() {
+            if (!state.atividades) state.atividades = FALLBACK_ATIVIDADES;
+            const {atividades} = state;
+            const filtered = filterAtividades(atividades);
+            const sorted = sortData(filtered, state.sortColumn, state.sortOrder);
+
+            const tbody = document.getElementById('atividades-tbody');
+            tbody.innerHTML = sorted.map(a => `
+                <tr onclick="showAtividadeModal(${a.id})">
+                    <td>${a.processo}</td>
+                    <td>${a.cliente}</td>
+                    <td>${a.providencia}</td>
+                    <td>${a.tipo}</td>
+                    <td>${a.origem}</td>
+                    <td><span class="badge badge-urgency ${a.urgencia.toLowerCase()}">${a.urgencia}</span></td>
+                    <td><span class="badge badge-status ${a.status}">${capitalizeStatus(a.status)}</span></td>
+                    <td>${new Date(a.prazo).toLocaleDateString('pt-BR')}</td>
+                </tr>
+            `).join('');
+        }
+
+        function renderWorkflows() {
+            if (!state.workflows) state.workflows = FALLBACK_WORKFLOWS;
+            const {workflows} = state;
+            const juridicos = workflows.filter(w => w.category === 'juridico');
+            const infraestrutura = workflows.filter(w => w.category === 'infraestrutura');
+
+            const renderCards = (items, containerId) => {
+                const container = document.getElementById(containerId);
+                container.innerHTML = items.map(w => {
+                    const statusColor = w.status === 'success' ? 'var(--green)' : w.status === 'error' ? 'var(--red)' : 'var(--text-secondary)';
+                    const lastExecTime = new Date(w.last_execution).toLocaleString('pt-BR', {month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit'});
+
+                    return `
+                        <div class="workflow-card" onclick="showWorkflowModal('${w.id}')">
+                            <div class="workflow-category-tag ${w.category}">${w.category === 'juridico' ? 'Jurídico' : 'Infraestrutura'}</div>
+                            <div class="workflow-header">
+                                <div class="workflow-icon">${w.icon}</div>
+                                <div class="workflow-info">
+                                    <div class="workflow-name">${w.name}</div>
+                                    <div class="workflow-desc">${w.desc}</div>
+                                </div>
+                            </div>
+                            <div class="workflow-status">
+                                <span class="status-dot ${w.status}"></span>
+                                <span>${w.status === 'success' ? 'Sucesso' : w.status === 'error' ? 'Erro' : 'Ocioso'}</span>
+                            </div>
+                            <div class="workflow-time">Última exec: ${lastExecTime}</div>
+                            <div class="workflow-footer">
+                                <button class="btn btn-primary btn-small" onclick="executeAndShow(event, '${w.id}')">Executar</button>
+                            </div>
+                        </div>
+                    `;
+                }).join('');
+            };
+
+            // Quick workflows
+            const quick = workflows.filter(w => ['analise_prazos', 'resumo_processos', 'verificar_intimacoes', 'alerta_prazos'].includes(w.id));
+            renderCards(quick, 'quick-workflows');
+            renderCards(juridicos, 'juridicos-workflows');
+            renderCards(infraestrutura, 'infraestrutura-workflows');
+        }
+
+        function renderExecutions() {
+            if (!state.workflows) state.workflows = FALLBACK_WORKFLOWS;
+            const {workflows} = state;
+            const execStats = document.getElementById('exec-stats');
+            const todayCount = workflows.filter(w => w.last_execution && w.last_execution.includes('2026-03-19')).length;
+            const successCount = workflows.filter(w => w.status === 'success').length;
+
+            execStats.innerHTML = `
+                <div class="stat-box">
+                    <div class="stat-value">${todayCount}</div>
+                    <div class="stat-label">Hoje</div>
+                </div>
+                <div class="stat-box">
+                    <div class="stat-value">${Math.round(successCount / workflows.length * 100)}%</div>
+                    <div class="stat-label">Taxa Sucesso</div>
+                </div>
+                <div class="stat-box">
+                    <div class="stat-value">${workflows.length}</div>
+                    <div class="stat-label">Total Workflows</div>
+                </div>
+                <div class="stat-box">
+                    <div class="stat-value">0</div>
+                    <div class="stat-label">Erros</div>
+                </div>
+            `;
+
+            // Execution table
+            const tbody = document.getElementById('executions-tbody');
+            const mockExecutions = workflows.map(w => ({
+                name: w.name,
+                start: w.last_execution,
+                duration: Math.floor(Math.random() * 300) + 30,
+                status: w.status,
+                trigger: 'scheduled'
+            })).sort((a, b) => new Date(b.start) - new Date(a.start)).slice(0, 15);
+
+            tbody.innerHTML = mockExecutions.map(e => {
+                const startTime = new Date(e.start).toLocaleTimeString('pt-BR');
+                const durationStr = e.duration > 60 ? `${Math.floor(e.duration / 60)}m ${e.duration % 60}s` : `${e.duration}s`;
+                const statusText = e.status === 'success' ? 'Sucesso' : e.status === 'error' ? 'Erro' : 'Executando';
+
+                return `
+                    <tr>
+                        <td>${e.name}</td>
+                        <td>${startTime}</td>
+                        <td>${durationStr}</td>
+                        <td><span class="status-dot ${e.status}"></span>${statusText}</td>
+                        <td>${e.trigger}</td>
+                    </tr>
+                `;
+            }).join('');
+        }
+
+        // ========== CALENDAR ==========
+        function renderCalendar() {
+            if (!state.atividades) state.atividades = FALLBACK_ATIVIDADES;
+            const {atividades, currentMonth} = state;
+            const year = currentMonth.getFullYear();
+            const month = currentMonth.getMonth();
+
+            document.getElementById('calendar-month-year').textContent =
+                currentMonth.toLocaleDateString('pt-BR', {month: 'long', year: 'numeric'}).toUpperCase();
+
+            const firstDay = new Date(year, month, 1).getDay();
+            const daysInMonth = new Date(year, month + 1, 0).getDate();
+            const daysInPrevMonth = new Date(year, month, 0).getDate();
+
+            const table = document.getElementById('calendar-table');
+            const html = [];
+
+            // Header
+            html.push('<thead><tr>');
+            ['Dom', 'Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sab'].forEach(d => html.push(`<th>${d}</th>`));
+            html.push('</tr></thead>');
+
+            html.push('<tbody><tr>');
+
+            // Previous month
+            for (let i = firstDay - 1; i >= 0; i--) {
+                const date = daysInPrevMonth - i;
+                html.push(`<td><span class="calendar-day other-month">${date}</span><div class="calendar-dots"></div></td>`);
+            }
+
+            // Current month
+            for (let day = 1; day <= daysInMonth; day++) {
+                if ((firstDay + day - 1) % 7 === 0 && day > 1) html.push('</tr><tr>');
+
+                const dateStr = `${year}-${String(month + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+                const dayAtiv = atividades.filter(a => a.prazo === dateStr && a.status !== 'concluida');
+                const todayStr = new Date().toISOString().slice(0,10); const isToday = dateStr === todayStr;
+
+                let dots = '';
+                dayAtiv.forEach(a => {
+                    const color = a.urgencia === 'URGENTE' ? 'red' : a.urgencia === 'ALTO' ? 'orange' : 'yellow';
+                    dots += `<div class="calendar-dot ${color}"></div>`;
+                });
+
+                html.push(`
+                    <td onclick="showCalendarDay('${dateStr}')">
+                        <span class="calendar-day ${isToday ? 'today' : ''}">${day}</span>
+                        <div class="calendar-dots">${dots}</div>
+                    </td>
+                `);
+            }
+
+            // Next month
+            const totalCells = (firstDay + daysInMonth);
+            const remainingCells = (7 - (totalCells % 7)) % 7;
+            for (let i = 1; i <= remainingCells; i++) {
+                html.push(`<td><span class="calendar-day other-month">${i}</span><div class="calendar-dots"></div></td>`);
+            }
+
+            html.push('</tr></tbody>');
+            table.innerHTML = html.join('');
+        }
+
+        // ========== HELPER FUNCTIONS ==========
+        function filterAtividades(atividades) {
+            let filtered = atividades;
+
+            if (state.currentFilters.status !== 'todos') {
+                filtered = filtered.filter(a => a.status === state.currentFilters.status);
+            }
+
+            if (state.currentFilters.urgencia !== 'todos') {
+                filtered = filtered.filter(a => a.urgencia === state.currentFilters.urgencia);
+            }
+
+            const search = document.getElementById('search-atividades')?.value?.toLowerCase() || '';
+            if (search) {
+                filtered = filtered.filter(a =>
+                    a.processo.toLowerCase().includes(search) ||
+                    a.cliente.toLowerCase().includes(search) ||
+                    a.providencia.toLowerCase().includes(search)
+                );
+            }
+
+            return filtered;
+        }
+
+        function sortData(data, column, order) {
+            return [...data].sort((a, b) => {
+                let aVal = a[column];
+                let bVal = b[column];
+
+                if (typeof aVal === 'string') {
+                    aVal = aVal.toLowerCase();
+                    bVal = bVal.toLowerCase();
+                }
+
+                if (order === 'asc') return aVal > bVal ? 1 : -1;
+                return aVal < bVal ? 1 : -1;
+            });
+        }
+
+        function capitalizeStatus(status) {
+            const map = {
+                'pendente': 'Pendente',
+                'em_andamento': 'Em Andamento',
+                'concluida': 'Concluída'
+            };
+            return map[status] || status;
+        }
+
+        function showToast(message, type = 'info') {
+            const container = document.getElementById('toast-container');
+            const toast = document.createElement('div');
+            toast.className = `toast ${type}`;
+            toast.textContent = message;
+            container.appendChild(toast);
+            setTimeout(() => toast.remove(), 3000);
+        }
+
+        // ========== MODALS ==========
+        function showAtividadeModal(id) {
+            const atividade = state.atividades.find(a => a.id === id);
+            if (!atividade) return;
+
+            const modal = document.getElementById('modal');
+            const content = document.getElementById('modal-content');
+
+            document.getElementById('modal-title').textContent = `${atividade.processo}`;
+            content.innerHTML = `
+                <div class="modal-field">
+                    <div class="modal-field-label">Cliente</div>
+                    <div class="modal-field-value">${atividade.cliente}</div>
+                </div>
+                <div class="modal-field">
+                    <div class="modal-field-label">Providência</div>
+                    <div class="modal-field-value">${atividade.providencia}</div>
+                </div>
+                <div class="modal-field">
+                    <div class="modal-field-label">Tipo</div>
+                    <div class="modal-field-value">${atividade.tipo}</div>
+                </div>
+                <div class="modal-field">
+                    <div class="modal-field-label">Origem</div>
+                    <div class="modal-field-value">${atividade.origem}</div>
+                </div>
+                <div class="modal-field">
+                    <div class="modal-field-label">Urgência</div>
+                    <div class="modal-field-value">
+                        <span class="badge badge-urgency ${atividade.urgencia.toLowerCase()}">${atividade.urgencia}</span>
+                    </div>
+                </div>
+                <div class="modal-field">
+                    <div class="modal-field-label">Status</div>
+                    <div class="modal-field-value">
+                        <span class="badge badge-status ${atividade.status}">${capitalizeStatus(atividade.status)}</span>
+                    </div>
+                </div>
+                <div class="modal-field">
+                    <div class="modal-field-label">Prazo</div>
+                    <div class="modal-field-value">${new Date(atividade.prazo).toLocaleDateString('pt-BR')}</div>
+                </div>
+            `;
+
+            document.getElementById('modal-overlay').classList.add('active');
+        }
+
+        function showWorkflowModal(id) {
+            const workflow = state.workflows.find(w => w.id === id);
+            if (!workflow) return;
+
+            const modal = document.getElementById('modal');
+            const content = document.getElementById('modal-content');
+
+            const lastExecDate = new Date(workflow.last_execution).toLocaleString('pt-BR');
+            const mockExecHistory = [
+                {time: '09:30', status: 'success', duration: '45s'},
+                {time: '08:45', status: 'success', duration: '52s'},
+                {time: '07:30', status: 'success', duration: '48s'},
+                {time: '06:15', status: 'success', duration: '41s'},
+                {time: '05:00', status: 'success', duration: '39s'}
+            ];
+
+            document.getElementById('modal-title').textContent = workflow.name;
+            content.innerHTML = `
+                <div class="modal-field">
+                    <div class="modal-field-label">Descrição</div>
+                    <div class="modal-field-value">${workflow.desc}</div>
+                </div>
+                <div class="modal-field">
+                    <div class="modal-field-label">Categoria</div>
+                    <div class="modal-field-value">
+                        <span class="workflow-category-tag ${workflow.category}">
+                            ${workflow.category === 'juridico' ? 'Jurídico' : 'Infraestrutura'}
+                        </span>
+                    </div>
+                </div>
+                <div class="modal-field">
+                    <div class="modal-field-label">Status</div>
+                    <div class="modal-field-value">
+                        <span class="status-dot ${workflow.status}"></span>
+                        ${workflow.status === 'success' ? 'Sucesso' : 'Ocioso'}
+                    </div>
+                </div>
+                <div class="modal-field">
+                    <div class="modal-field-label">Última Execução</div>
+                    <div class="modal-field-value">${lastExecDate}</div>
+                </div>
+                <div class="execution-history">
+                    <div style="font-size: 12px; font-weight: 600; margin-bottom: 10px;">Histórico de Execuções</div>
+                    ${mockExecHistory.map(exec => `
+                        <div class="execution-item">
+                            <div class="execution-time">${exec.time}</div>
+                            <div style="flex: 1;"><span class="status-dot ${exec.status}"></span>${exec.status === 'success' ? 'Sucesso' : 'Erro'}</div>
+                            <div class="execution-duration">${exec.duration}</div>
+                        </div>
+                    `).join('')}
+                </div>
+                <div style="margin-top: 16px;">
+                    <button class="btn btn-primary" onclick="executeWorkflow('${workflow.id}'); closeModal();">Executar Agora</button>
+                </div>
+            `;
+
+            document.getElementById('modal-overlay').classList.add('active');
+        }
+
+        function showCalendarDay(dateStr) {
+            const dayAtiv = state.atividades.filter(a => a.prazo === dateStr);
+            if (dayAtiv.length === 0) {
+                showToast('Nenhuma atividade neste dia', 'info');
+                return;
+            }
+
+            const date = new Date(dateStr).toLocaleDateString('pt-BR');
+            const modal = document.getElementById('modal');
+            const content = document.getElementById('modal-content');
+
+            document.getElementById('modal-title').textContent = `Atividades de ${date}`;
+            content.innerHTML = dayAtiv.map(a => `
+                <div class="modal-field" style="cursor: pointer; padding: 8px; background: rgba(0,0,0,0.2); border-radius: 6px;">
+                    <div class="modal-field-label">${a.processo}</div>
+                    <div class="modal-field-value">${a.providencia}</div>
+                    <div style="margin-top: 6px;">
+                        <span class="badge badge-urgency ${a.urgencia.toLowerCase()}">${a.urgencia}</span>
+                        <span class="badge badge-status ${a.status}" style="margin-left: 6px;">${capitalizeStatus(a.status)}</span>
+                    </div>
+                </div>
+            `).join('');
+
+            document.getElementById('modal-overlay').classList.add('active');
+        }
+
+        function closeModal() {
+            document.getElementById('modal-overlay').classList.remove('active');
+        }
+
+        function executeAndShow(event, id) {
+            event.stopPropagation();
+            executeWorkflow(id);
+        }
+
+        // ========== EVENT LISTENERS ==========
+        document.getElementById('modal-close').addEventListener('click', closeModal);
+        document.getElementById('modal-overlay').addEventListener('click', (e) => {
+            if (e.target.id === 'modal-overlay') closeModal();
+        });
+
+        // Navigation
+        document.querySelectorAll('[data-section]').forEach(el => {
+            el.addEventListener('click', (e) => {
+                const section = e.currentTarget.dataset.section;
+                document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+                document.querySelectorAll('[data-section]').forEach(el => {
+                    el.classList.remove('active');
+                    if (el.classList.contains('icon-btn')) el.classList.remove('active');
+                    if (el.classList.contains('nav-item')) el.classList.remove('active');
+                });
+
+                document.getElementById(section).classList.add('active');
+                e.currentTarget.classList.add('active');
+
+                const title = {
+                    dashboard: 'Dashboard',
+                    atividades: 'Atividades',
+                    workflows: 'Fluxos de Trabalho',
+                    execucoes: 'Monitor de Execuções',
+                    calendario: 'Calendário',
+                    documentos: 'Documentos',
+                    chat: 'Chat IA'
+                };
+
+                document.getElementById('page-title').textContent = title[section] || 'Dashboard';
+
+                if (section === 'calendario') renderCalendar();
+            });
+        });
+
+        // Filters
+        document.querySelectorAll('[data-filter]').forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                const filter = e.target.dataset.filter;
+                const value = e.target.dataset.value;
+
+                document.querySelectorAll(`[data-filter="${filter}"]`).forEach(b => b.classList.remove('active'));
+                e.target.classList.add('active');
+
+                state.currentFilters[filter] = value;
+
+                if (filter.includes('status') || filter === 'urgencia') renderAtividades();
+                if (filter.includes('exec-status')) renderExecutions();
+            });
+        });
+
+        // Search
+        document.getElementById('search-atividades')?.addEventListener('input', renderAtividades);
+
+        // Sort
+        document.querySelectorAll('#atividades-table th[data-sort]').forEach(th => {
+            th.addEventListener('click', (e) => {
+                const column = e.target.dataset.sort;
+                state.sortOrder = state.sortColumn === column && state.sortOrder === 'asc' ? 'desc' : 'asc';
+                state.sortColumn = column;
+                renderAtividades();
+            });
+        });
+
+        // Calendar navigation
+        document.getElementById('prev-month')?.addEventListener('click', () => {
+            state.currentMonth.setMonth(state.currentMonth.getMonth() - 1);
+            renderCalendar();
+        });
+
+        document.getElementById('next-month')?.addEventListener('click', () => {
+            state.currentMonth.setMonth(state.currentMonth.getMonth() + 1);
+            renderCalendar();
+        });
+
+        document.getElementById('today-btn')?.addEventListener('click', () => {
+            state.currentMonth = new Date();
+            renderCalendar();
+        });
+
+        // ========== FIX 4: Global Error Handler ==========
+        window.onerror = function(msg, src, line, col, err) {
+            console.error('[WTG] Global error:', msg, src, line, col, err);
+            if (!state.atividades || state.atividades.length === 0) state.atividades = FALLBACK_ATIVIDADES;
+            if (!state.workflows || state.workflows.length === 0) state.workflows = FALLBACK_WORKFLOWS;
+            if (!state.stats || !state.stats.atividades) state.stats = {
+                atividades: {total: 17, pendentes: 8, em_andamento: 5, concluidas: 4, urgentes: 4},
+                workflows: {total_executions: 156, success_rate: 94.2, today_count: 8, total_workflows: 12}
+            };
+            try { renderDashboard(); renderAtividades(); renderWorkflows(); renderExecutions(); } catch(e) {}
+            return true;
+        };
+
+        // ========== FIX 5: Promise Rejection Handler ==========
+        window.addEventListener('unhandledrejection', function(event) {
+            console.error('[WTG] Unhandled promise rejection:', event.reason);
+            event.preventDefault();
+            setTimeout(loadData, 3000);
+        });
+
+        // ========== FIX 6: Visibility Change Handler ==========
+        document.addEventListener('visibilitychange', function() {
+            if (document.visibilityState === 'visible') {
+                console.log('[WTG] Tab became visible, reloading data...');
+                loadData();
+            }
+        });
+
+        // ========== INIT (PATCHED — tracked intervals) ==========
+        updateClock();
+        const _clockInterval = setInterval(updateClock, 1000);
+        const _refreshInterval = setInterval(loadData, AUTO_REFRESH);
+        const _execInterval = setInterval(() => {
+            if (document.getElementById('execucoes').classList.contains('active')) {
+                renderExecutions();
+            }
+        }, EXEC_REFRESH);
+
+        // Cleanup on unload
+        window.addEventListener('beforeunload', function() {
+            clearInterval(_clockInterval);
+            clearInterval(_refreshInterval);
+            clearInterval(_execInterval);
+        });
+
+        loadData();
+    </script>
+</body>
+</html>
